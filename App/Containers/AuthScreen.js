@@ -1,27 +1,27 @@
-import React, { Component } from "react"
-import { View } from "react-native"
-import { Auth } from "aws-amplify"
+import React, { Component } from "react";
+import { View } from "react-native";
+import { Auth } from "aws-amplify";
 import {
   Icon,
   FormLabel,
   FormInput,
   FormValidationMessage,
-  Button,
-} from "react-native-elements"
-import { connect } from "react-redux"
-import API from "../../App/Services/Api"
+  Button
+} from "react-native-elements";
+import { connect } from "react-redux";
+import API from "../../App/Services/Api";
 // Add Actions - replace 'Your' with whatever your reducer is called :)
 // import YourActions from '../Redux/YourRedux'
 
-import MFAPrompt from "../Components/MFAPrompt"
+import MFAPrompt from "../Components/MFAPrompt";
 
 // Styles
-import styles from "./Styles/AuthScreenStyle"
+import styles from "./Styles/AuthScreenStyle";
 
 class AuthScreen extends Component {
   api = {};
   constructor(props) {
-    super(props)
+    super(props);
 
     this.state = {
       showMFAPrompt: false,
@@ -30,84 +30,83 @@ class AuthScreen extends Component {
       email: "",
       phoneNumber: "",
       errorMessage: "",
-      fontLoaded: false,
-    }
+      fontLoaded: false
+    };
 
-    this.baseState = this.state
+    this.baseState = this.state;
 
-    this.handleSignUp = this.handleSignUp.bind(this)
-    this.handleMFAValidate = this.handleMFAValidate.bind(this)
-    this.handleMFASuccess = this.handleMFASuccess.bind(this)
-    this.handleMFACancel = this.handleMFACancel.bind(this)
-    this.onPhoneSubmit = this.onPhoneSubmit.bind(this)
-    this.api = API.create()
+    this.handleSignUp = this.handleSignUp.bind(this);
+    this.handleMFAValidate = this.handleMFAValidate.bind(this);
+    this.handleMFASuccess = this.handleMFASuccess.bind(this);
+    this.handleMFACancel = this.handleMFACancel.bind(this);
+    this.onPhoneSubmit = this.onPhoneSubmit.bind(this);
+    this.api = API.create();
   }
   componentDidMount() {
     setTimeout(() => {
       this.api.getRoot().then(result => {
-        const aa = result
-      })
-    }, 3000)
+        const aa = result;
+      });
+    }, 3000);
   }
   onPhoneSubmit(event) {
-    const isValidPhone = this.checkPhonePattern(event.nativeEvent.text)
+    const isValidPhone = this.checkPhonePattern(event.nativeEvent.text);
 
     this.setState({
       errorMessage:
         !isValidPhone &&
-        "Please enter a phone number with the format +(countrycode)(number) such as +12223334444",
-    })
+        "Please enter a phone number with the format +(countrycode)(number) such as +12223334444"
+    });
   }
 
   onSignUp() {
-    this.setState(this.baseState)
+    this.setState(this.baseState);
 
     // this.props.onSignUp()
   }
 
   handleMFASuccess() {
-    this.setState({ showMFAPrompt: false })
+    this.setState({ showMFAPrompt: false });
 
-    this.onSignUp()
+    this.onSignUp();
   }
 
   handleMFACancel() {
-    this.setState({ showMFAPrompt: false })
+    this.setState({ showMFAPrompt: false });
   }
 
   checkPhonePattern = phone => /\+[1-9]\d{1,14}$/.test(phone);
 
   async handleSignUp() {
-    const {
- username, password, email, phoneNumber 
-} = this.state
-    let userConfirmed = true
+    const { username, password, email, phoneNumber } = this.state;
+    let userConfirmed = true;
 
     Auth.signUp(username, password, email, phoneNumber)
       .then(data => {
-        userConfirmed = data.userConfirmed
+        userConfirmed = data.userConfirmed;
 
-        this.setState({ showMFAPrompt: !userConfirmed })
+        this.setState({ showMFAPrompt: !userConfirmed });
 
         if (userConfirmed) {
-          this.onSignUp()
+          this.onSignUp();
         }
       })
       .catch(err => {
-        console.log(err)
-        this.setState({ errorMessage: err.message })
-      })
+        console.log(err);
+        this.setState({ errorMessage: err.message });
+      });
   }
 
   async handleMFAValidate(code = "") {
     try {
       await Auth.confirmSignUp(this.state.username, code).then(data =>
-        console.log("sign up successful ->", data),)
+        console.log("sign up successful ->", data)
+      );
     } catch (exception) {
-      return exception.message || exception
+      return exception.message || exception;
     }
 
-    return true
+    return true;
   }
 
   render() {
@@ -129,7 +128,7 @@ class AuthScreen extends Component {
               ref="username"
               textInputRef="usernameInput"
               onSubmitEditing={() => {
-                this.refs.password.refs.passwordInput.focus()
+                this.refs.password.refs.passwordInput.focus();
               }}
               value={this.state.username}
               onChangeText={username => this.setState({ username })}
@@ -149,7 +148,7 @@ class AuthScreen extends Component {
               ref="password"
               textInputRef="passwordInput"
               onSubmitEditing={() => {
-                this.refs.email.refs.emailInput.focus()
+                this.refs.email.refs.emailInput.focus();
               }}
               secureTextEntry
               value={this.state.password}
@@ -171,7 +170,7 @@ class AuthScreen extends Component {
               ref="email"
               textInputRef="emailInput"
               onSubmitEditing={() => {
-                this.refs.phone.refs.phoneInput.focus()
+                this.refs.phone.refs.phoneInput.focus();
               }}
               value={this.state.email}
               onChangeText={email => this.setState({ email })}
@@ -216,15 +215,15 @@ class AuthScreen extends Component {
           )}
         </View>
       </View>
-    )
+    );
   }
 }
 
-const mapStateToProps = state => ({})
+const mapStateToProps = state => ({});
 
-const mapDispatchToProps = dispatch => ({})
+const mapDispatchToProps = dispatch => ({});
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps,
-)(AuthScreen)
+  mapDispatchToProps
+)(AuthScreen);

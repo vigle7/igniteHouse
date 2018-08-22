@@ -10,7 +10,7 @@ import {
 
 import { Button, Icon } from "react-native-elements";
 
-import { colors } from "theme";
+import colors from "../Themes/Colors";
 
 const { width, height } = Dimensions.get("window");
 let styles = {};

@@ -13,7 +13,6 @@ import {
   Platform,
   ActivityIndicator
 } from "react-native";
-import { ImagePicker, Permissions } from "expo";
 import {
   FormLabel,
   FormInput,

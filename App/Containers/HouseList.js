@@ -10,7 +10,6 @@ import {
   TouchableHighlight
 } from "react-native";
 import { Icon, Divider } from "react-native-elements";
-import { Actions } from "react-native-router-flux";
 
 import { API, Storage } from "aws-amplify";
 import colors from "../Themes/Colors";
@@ -73,7 +72,7 @@ export default class HouseList extends React.Component {
       <View key={house.picKey}>
         <TouchableHighlight
           onPress={() => {
-            Actions.ViewHouse({ house });
+            this.props.navigation.navigate("ViewHouse", { house });
           }}
           underlayColor="transparent"
         >
