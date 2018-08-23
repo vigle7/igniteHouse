@@ -1,13 +1,19 @@
-import '../Config'
-import DebugConfig from '../Config/DebugConfig'
-import React, { Component } from 'react'
-import { Provider } from 'react-redux'
-import RootContainer from './RootContainer'
-import createStore from '../Redux'
+global.Buffer = global.Buffer || require("buffer").Buffer; // Required for aws sigv4 signing
+
+import "../Config";
+import DebugConfig from "../Config/DebugConfig";
+import React, { Component } from "react";
+import { Provider } from "react-redux";
+import RootContainer from "./RootContainer";
+import createStore from "../Redux";
+
+import Amplify from "aws-amplify";
+import { withAuthenticator } from "aws-amplify-react-native";
+import aws_exports from "../../aws-exports";
 
 // create our store
-const store = createStore()
-
+const store = createStore();
+Amplify.configure(aws_exports);
 /**
  * Provides an entry point into our application.  Both index.ios.js and index.android.js
  * call this component first.
@@ -18,16 +24,16 @@ const store = createStore()
  * We separate like this to play nice with React Native's hot reloading.
  */
 class App extends Component {
-  render () {
+  render() {
     return (
       <Provider store={store}>
         <RootContainer />
       </Provider>
-    )
+    );
   }
 }
 
 // allow reactotron overlay for fast design in dev mode
-export default DebugConfig.useReactotron
+export default (DebugConfig.useReactotron
   ? console.tron.overlay(App)
-  : App
+  : withAuthenticator(App));

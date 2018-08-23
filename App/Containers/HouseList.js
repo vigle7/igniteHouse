@@ -5,11 +5,15 @@ import {
   Text,
   Animated,
   Image,
+  Modal,
   Easing,
   StyleSheet,
   TouchableHighlight
 } from "react-native";
+import { StackNavigator } from "react-navigation";
 import { Icon, Divider } from "react-native-elements";
+import AddHouseScreen from "./AddHouseScreen";
+import UploadPhoto from "../Components/UploadPhoto";
 
 import { API, Storage } from "aws-amplify";
 import colors from "../Themes/Colors";
@@ -20,9 +24,11 @@ export default class HouseList extends React.Component {
     super(props);
     this.state = {
       apiResponse: null,
-      loading: true
+      loading: true,
+      modalVisible: false
     };
     this.animatedIcon = new Animated.Value(0);
+    this.toggleModal = this.toggleModal.bind(this);
   }
 
   componentDidMount() {
@@ -38,6 +44,14 @@ export default class HouseList extends React.Component {
         easing: Easing.linear
       })
     ).start();
+  }
+
+  toggleModal() {
+    if (!this.state.modalVisible) {
+      this.handleRetrievePet();
+      this.animate();
+    }
+    this.setState(state => ({ modalVisible: !state.modalVisible }));
   }
 
   handleRetrievePet() {
@@ -67,11 +81,11 @@ export default class HouseList extends React.Component {
 
   renderHouse(house, index) {
     const uri = house.picUrl;
-
     return (
       <View key={house.picKey}>
         <TouchableHighlight
           onPress={() => {
+            console.log("house", house);
             this.props.navigation.navigate("ViewHouse", { house });
           }}
           underlayColor="transparent"
@@ -100,6 +114,11 @@ export default class HouseList extends React.Component {
     const spin = this.animatedIcon.interpolate({
       inputRange: [0, 1],
       outputRange: ["0deg", "360deg"]
+    });
+
+    const AddPetRoutes = StackNavigator({
+      AddHouseScreen: { screen: AddHouseScreen },
+      UploadPhoto: { screen: UploadPhoto }
     });
 
     return (
@@ -137,7 +156,7 @@ export default class HouseList extends React.Component {
           )}
           {!loading && (
             <View style={styles.container}>
-              <Text style={styles.title}>My Pets</Text>
+              <Text style={styles.title}>My Houses</Text>
               {typeof apiResponse === "string" ? (
                 <Text>{apiResponse}</Text>
               ) : (
@@ -148,6 +167,19 @@ export default class HouseList extends React.Component {
             </View>
           )}
         </ScrollView>
+        <Modal
+          animationType={"slide"}
+          transparent={false}
+          visible={this.state.modalVisible}
+          onRequestClose={this.toggleModal}
+        >
+          <AddPetRoutes
+            screenProps={{
+              handleRetrievePet: this.handleRetrievePet,
+              toggleModal: this.toggleModal
+            }}
+          />
+        </Modal>
       </View>
     );
   }

@@ -10,15 +10,14 @@ const propTypes = {
 
 class ViewHouse extends React.Component {
   render() {
-    const title = this.props.title || "No house";
-    const price = this.props.price || "No house";
+    const { house } = this.props.navigation.state.params;
 
     return (
       <View style={styles.container}>
         <View style={styles.topContainer}>
           <View style={styles.infoContainer}>
-            <Text style={styles.title}>{title || "無標題"}</Text>
-            <Text style={styles.info}>{price || "無價格"}</Text>
+            <Text style={styles.title}>{house.title || "無標題"}</Text>
+            <Text style={styles.info}>{house.price || "無價格"}</Text>
           </View>
         </View>
         <View style={styles.breaker} />

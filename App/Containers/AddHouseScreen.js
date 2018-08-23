@@ -25,7 +25,7 @@ import uuid from "react-native-uuid";
 import mime from "mime-types";
 import { API, Storage } from "aws-amplify";
 import colors from "../Themes/Colors";
-// import files from "../Utils/files"
+import files from "../Utils/files";
 
 const { width, height } = Dimensions.get("window");
 
@@ -50,12 +50,24 @@ export default class AddHouseScreen extends React.Component {
       },
       showActivityIndicator: false
     };
-    this.pickImage = this.pickImage.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
-    this.addHouse = this.addHouse.bind(this);
     this.readImage = this.readImage.bind(this);
     this.apiSaveHouse = this.apiSaveHouse.bind(this);
   }
+
+  updateSelectedImage = (selectedImage, selectedImageIndex) => {
+    if (selectedImageIndex === this.state.selectedImageIndex) {
+      this.setState({
+        selectedImageIndex: null,
+        selectedImage: {}
+      });
+    } else {
+      this.setState({
+        selectedImageIndex,
+        selectedImage
+      });
+    }
+  };
 
   updateInput = (key, value) => {
     this.setState(state => ({
@@ -98,46 +110,97 @@ export default class AddHouseScreen extends React.Component {
     this.setState(() => ({ modalVisible: !this.state.modalVisible }));
   }
 
-  async addHouse() {
-    const { selectedImage: image } = this.state;
+  // async addHouse() {
+  //   const { selectedImage: image } = this.state;
+  //   this.setState({ showActivityIndicator: true });
+  //   this.readImage(image)
+  //     .then(fileInfo => ({
+  //       ...this.state.input,
+  //       picKey: fileInfo && fileInfo.key
+  //     }))
+  //     .then(this.apiSaveHouse)
+  //     .then(apiResponse => {
+  //       console.log(`response from saving hosue: ${apiResponse}`);
+  //       this.setState({ showActivityIndicator: false });
+  //       // this.props.screenProps.handleRetrievePet()
+  //       // this.toggleModal()
+  //     })
+  //     .catch(err => {
+  //       console.log("error saving pet...", err);
+  //       this.setState({ showActivityIndicator: false });
+  //     });
+  // }
+
+  addHouse = async () => {
+    const houseInfo = this.state.input;
+    const { node: imageNode } = this.state.selectedImage;
+
     this.setState({ showActivityIndicator: true });
-    this.readImage(image)
+
+    this.readImage(imageNode)
       .then(fileInfo => ({
-        ...this.state.input,
+        ...houseInfo,
         picKey: fileInfo && fileInfo.key
       }))
       .then(this.apiSaveHouse)
-      .then(apiResponse => {
-        console.log(`response from saving hosue: ${apiResponse}`);
+      .then(data => {
         this.setState({ showActivityIndicator: false });
-        // this.props.screenProps.handleRetrievePet()
-        // this.toggleModal()
+        this.props.screenProps.handleRetrievePet();
+        this.props.screenProps.toggleModal();
       })
       .catch(err => {
         console.log("error saving pet...", err);
         this.setState({ showActivityIndicator: false });
       });
-  }
+  };
 
-  readImage(image = null) {
-    debugger;
-    if (image === null) {
+  // readImage(image = null) {
+  //   if (image === null) {
+  //     return Promise.resolve();
+  //   }
+  //   const result = {};
+
+  //   result.type = mime.lookup(image.node.image.uri);
+  //   const extension = mime.extension(result.type);
+  //   const imagePath = image.node.image.uri;
+  //   const picName = `${uuid.v1()}.${extension}`;
+  //   const key = `${picName}`;
+  //   return files
+  //     .readFile(imagePath)
+  //     .then(Buffer => {
+  //       const aa = Buffer;
+  //       debugger;
+  //       Storage.putObject(key, Buffer, result.type);
+  //     })
+  //     .then(fileInfo => ({ key: fileInfo.key }))
+  //     .then(x => console.log("SAVED IMAGE WITH KEY", x) || x)
+  //     .catch(err => console.log("IMAGE UPLOAD ERROR", err));
+  // }
+
+  readImage(imageNode = null) {
+    if (imageNode === null) {
       return Promise.resolve();
     }
+
+    const { image } = imageNode;
     const result = {};
 
-    result.type = mime.lookup(image.uri);
+    if (Platform.OS === "ios") {
+      result.type = mime.lookup(image.filename);
+    } else {
+      result.type = imageNode.type;
+    }
 
     const extension = mime.extension(result.type);
     const imagePath = image.uri;
     const picName = `${uuid.v1()}.${extension}`;
     const key = `${picName}`;
-    return fetch(imagePath)
-      .then(response => response.blob())
-      .then(Buffer => Storage.put(key, Buffer))
+
+    return files
+      .readFile(imagePath)
+      .then(buffer => Storage.put(key, buffer, { contentType: result.type }))
       .then(fileInfo => ({ key: fileInfo.key }))
-      .then(x => console.log("SAVED IMAGE WITH KEY", x) || x)
-      .catch(err => console.log("IMAGE UPLOAD ERROR", err));
+      .then(x => console.log("SAVED", x) || x);
   }
 
   async apiSaveHouse(house) {
@@ -163,7 +226,7 @@ export default class AddHouseScreen extends React.Component {
 
   render() {
     const { selectedImage } = this.state;
-
+    console.log("selectimage", selectedImage);
     return (
       <View style={{ flex: 1, paddingBottom: 0 }}>
         <ScrollView style={{ flex: 1 }}>
@@ -177,7 +240,7 @@ export default class AddHouseScreen extends React.Component {
             ) : (
               <Image
                 style={styles.addImageContainer}
-                source={{ uri: selectedImage.uri }}
+                source={{ uri: selectedImage.node.image.uri }}
               />
             )}
           </TouchableWithoutFeedback>
